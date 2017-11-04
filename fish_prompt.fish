@@ -1,7 +1,3 @@
-function _pwd_with_tilde
-  echo $PWD | sed 's|^'$HOME'\(.*\)$|~\1|'
-end
-
 function _in_git_directory
   git rev-parse --git-dir > /dev/null 2>&1
 end
@@ -54,7 +50,7 @@ function _git_status
   set -l asterisk
 
   if _git_dirty
-    set asterisk "$asterisk*"
+    set asterisk "✱"
   end
 
   echo $asterisk
@@ -71,22 +67,29 @@ end
 
 function _prompt_color_for_status
   if test $argv[1] -eq 0
-    echo magenta
+    echo $argv[2]
   else
-    echo red
+    echo $argv[3]
   end
 end
 
 function fish_prompt
   set -l last_status $status
 
-  _print_in_color "\n"(_pwd_with_tilde) blue
+  _print_in_color "\n "(prompt_pwd) blue
 
+  _print_in_color " ❯" (_prompt_color_for_status $last_status brblue brred) 
+  _print_in_color "❯" (_prompt_color_for_status $last_status magenta brred) 
+  _print_in_color "❯ " (_prompt_color_for_status $last_status brmagenta brred) 
+end
+
+function fish_right_prompt
   if _in_git_directory
-    _print_in_color " "(_git_branch_name_or_revision) 242
-    _print_in_color " "(_git_status) FCBC47
-    _print_in_color " "(_git_upstream_status) cyan
+    _print_in_color (_git_branch_name_or_revision) green
+    _print_in_color (_git_status)" " magenta 
+    _print_in_color (_git_upstream_status) cyan
   end
-
-  _print_in_color "\n❯ " (_prompt_color_for_status $last_status)
+  
+  _print_in_color "λ " brblue
+  _print_in_color (hostname)" " bryellow
 end
